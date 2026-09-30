@@ -1,4 +1,5 @@
 {
+  "content_in_root": false,
   "name": "Deye Battery Schedule Card",
   "render_readme": true,
   "filename": "deye-battery-schedule-card.js"
