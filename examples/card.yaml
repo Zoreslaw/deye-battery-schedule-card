@@ -1,0 +1,15 @@
+﻿type: custom:deye-battery-schedule-card
+title: Розклад батареї
+programs:
+  - time: time.inverter_program_1_time
+    soc: number.inverter_program_1_soc
+  - time: time.inverter_program_2_time
+    soc: number.inverter_program_2_soc
+  - time: time.inverter_program_3_time
+    soc: number.inverter_program_3_soc
+  - time: time.inverter_program_4_time
+    soc: number.inverter_program_4_soc
+  - time: time.inverter_program_5_time
+    soc: number.inverter_program_5_soc
+  - time: time.inverter_program_6_time
+    soc: number.inverter_program_6_soc

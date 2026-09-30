@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Розклад батареї Deye · перегляд</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #f2f5f3;
+        color: #273536;
+      }
+      header {
+        max-width: 1320px;
+        margin: auto;
+        padding: 32px 24px 16px;
+      }
+      h1 {
+        font-size: 25px;
+        font-weight: 500;
+        margin: 0 0 8px;
+      }
+      header p {
+        color: #6c7e77;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+      }
+      .theme {
+        padding: 24px;
+        --primary-text-color: #293a35;
+        --secondary-text-color: #76857f;
+        --card-background-color: #fff;
+        --secondary-background-color: #eff4f1;
+        --divider-color: #e4ebe7;
+        --primary-color: #4b8272;
+        --text-primary-color: #fff;
+        --error-color: #b84640;
+      }
+      .dark {
+        background: #131d1a;
+        color: #e0eae4;
+        --primary-text-color: #e0eae4;
+        --secondary-text-color: #94a69d;
+        --card-background-color: #1d2b25;
+        --secondary-background-color: #26382e;
+        --divider-color: #33483c;
+        --primary-color: #93c7ac;
+        --text-primary-color: #17291e;
+        --error-color: #f1a69c;
+        --deye-color-scheme: dark;
+      }
+      .theme h2 {
+        max-width: 1272px;
+        margin: 0 auto 20px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .grid {
+        max-width: 1272px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+      }
+      .label {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--secondary-text-color);
+        margin: 0 0 12px;
+      }
+      .tile {
+        min-width: 0;
+      }
+      .tile > deye-battery-schedule-card {
+        height: auto;
+      }
+      .single .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      @media (max-width: 1000px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 620px) {
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        header {
+          padding: 24px 16px 12px;
+        }
+        .theme {
+          padding: 20px 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Заряд за розкладом.</h1>
+      <p>
+        Шість програм. Час і рівень заряду — в одній картці.<br />Демонстраційні дані · без підключення до інвертора.
+      </p>
+    </header>
+    <main></main>
+    <script type="module">
+      // Standalone preview substitute for HA's icon component.
+      const icons = {
+        'mdi:clock-outline':
+          'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16m-1 2h2v6l4 2-1 1.7-5-2.7z',
+        'mdi:battery-clock':
+          'M15 3h-3V1H6v2H3v18h9v-2H5V5h8v4h2zm3 8a6 6 0 1 0 0 12 6 6 0 0 0 0-12m0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8m-1 1h1.5v3l2 1-.7 1.2-2.8-1.7z',
+        'mdi:alert-circle-outline':
+          'M11 7h2v6h-2zm0 8h2v2h-2zm1-13a10 10 0 1 0 0 20 10 10 0 0 0 0-20m0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16',
+      };
+      customElements.define(
+        'ha-icon',
+        class extends HTMLElement {
+          static observedAttributes = ['icon'];
+          constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+          }
+          connectedCallback() {
+            this.draw();
+          }
+          attributeChangedCallback() {
+            this.draw();
+          }
+          draw() {
+            this.shadowRoot.innerHTML = `<svg viewBox="0 0 24 24" style="width:var(--mdc-icon-size,24px);height:var(--mdc-icon-size,24px);display:block;fill:currentColor" aria-hidden="true"><path d="${icons[this.getAttribute('icon')] || icons['mdi:clock-outline']}"/></svg>`;
+          }
+        },
+      );
+      await import('../dist/deye-battery-schedule-card.js');
+      const params = new URLSearchParams(location.search);
+      window.previewCards = [];
+      window.previewCalls = [];
+      const labels = {
+        normal: 'ЗВИЧАЙНИЙ РОЗКЛАД',
+        varied: 'РІЗНИЙ ЗАРЯД',
+        intervals: 'ІНШІ ІНТЕРВАЛИ',
+        pending: 'ОЧІКУВАННЯ',
+        unavailable: 'ОДНА ПРОГРАМА НЕДОСТУПНА',
+        error: 'ПОМИЛКА ЗБЕРЕЖЕННЯ',
+      };
+      for (const theme of ['light', 'dark']) {
+        if (params.has('theme') && params.get('theme') !== theme) continue;
+        const section = document.createElement('section');
+        section.className = `theme ${theme} ${params.has('scenario') ? 'single' : ''}`;
+        section.innerHTML = `<h2>${theme === 'light' ? 'Світла тема' : 'Темна тема'}</h2><div class="grid"></div>`;
+        document.querySelector('main').append(section);
+        for (const scenario of Object.keys(labels)) {
+          if (params.has('scenario') && params.get('scenario') !== scenario) continue;
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.innerHTML = `<p class="label">${labels[scenario]}</p>`;
+          const card = document.createElement('deye-battery-schedule-card');
+          card.dataset.scenario = scenario;
+          card.dataset.theme = theme;
+          const programs = Array.from({ length: 6 }, (_, i) => ({
+            time: `time.demo_program_${i + 1}`,
+            soc: `number.demo_program_${i + 1}`,
+          }));
+          card.setConfig({ type: 'custom:deye-battery-schedule-card', programs });
+          const times =
+            scenario === 'intervals'
+              ? ['00:30', '04:45', '07:15', '12:00', '18:30', '22:15']
+              : ['01:00', '05:00', '09:00', '13:00', '17:00', '23:00'];
+          const states = {};
+          programs.forEach((program, i) => {
+            states[program.time] = { state: times[i] + ':00', attributes: { friendly_name: `Час програми ${i + 1}` } };
+            states[program.soc] = {
+              state: String(scenario === 'varied' ? [30, 80, 55, 40, 65, 90][i] : 50),
+              attributes: {
+                min: 10,
+                max: 100,
+                step: 1,
+                unit_of_measurement: '%',
+                friendly_name: `Заряд програми ${i + 1}`,
+              },
+            };
+          });
+          if (scenario === 'unavailable') states[programs[2].soc].state = 'unavailable';
+          const publish = () =>
+            (card.hass = {
+              states: { ...states },
+              callService: async (domain, service, data) => {
+                window.previewCalls.push({ domain, service, data });
+                if (scenario === 'error') throw Error('Preview failure');
+                if (scenario === 'pending') return new Promise(() => {});
+                setTimeout(() => {
+                  states[data.entity_id] = {
+                    ...states[data.entity_id],
+                    state: domain === 'time' ? data.time : String(data.value),
+                  };
+                  publish();
+                }, 1000);
+              },
+            });
+          publish();
+          tile.append(card);
+          section.querySelector('.grid').append(tile);
+          window.previewCards.push(card);
+          await card.updateComplete;
+          if (scenario === 'pending' || scenario === 'error') {
+            card.shadowRoot.querySelectorAll('.soc')[1].click();
+            await card.updateComplete;
+            const input = card.shadowRoot.querySelector('#value');
+            input.value = '55';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            card.shadowRoot
+              .querySelector('form')
+              .dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

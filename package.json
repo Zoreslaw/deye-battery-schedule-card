@@ -1,0 +1,51 @@
+{
+  "name": "deye-battery-schedule-card",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Compact Home Assistant dashboard card for editing Deye inverter Time of Use battery schedule.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zoreslaw/deye-battery-schedule-card.git"
+  },
+  "homepage": "https://github.com/Zoreslaw/deye-battery-schedule-card#readme",
+  "bugs": {
+    "url": "https://github.com/Zoreslaw/deye-battery-schedule-card/issues"
+  },
+  "module": "dist/deye-battery-schedule-card.js",
+  "files": [
+    "dist/deye-battery-schedule-card.js"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "rollup -c rollup.config.dev.js --watch",
+    "build": "npm run typecheck && npm run lint && rollup -c",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "lit": "^3.3.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.0",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "rollup": "^4.20.0",
+    "rollup-plugin-serve": "^1.1.1",
+    "tslib": "^2.6.0",
+    "typescript": "^5.9.3",
+    "happy-dom": "^20.0.0",
+    "@playwright/test": "^1.56.0"
+  }
+}
