@@ -285,6 +285,8 @@ export class DeyeBatteryScheduleCard extends LitElement {
       display: block;
       min-width: 0;
       height: 100%;
+      /* Hide browsing carets outside editable controls. */
+      caret-color: transparent;
     }
     * {
       box-sizing: border-box;
@@ -491,6 +493,7 @@ export class DeyeBatteryScheduleCard extends LitElement {
     }
     input {
       min-width: 0;
+      caret-color: auto;
       border: 1px solid var(--divider-color, #d9e3df);
       background: var(--secondary-background-color, #f3f6f5);
       border-radius: 8px;

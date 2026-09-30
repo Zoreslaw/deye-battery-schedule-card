@@ -289,6 +289,8 @@ let DeyeBatteryScheduleCardEditor = class DeyeBatteryScheduleCardEditor extends 
     static { this.styles = i$3 `
     :host {
       display: block;
+      /* Hide browsing carets outside editable controls. */
+      caret-color: transparent;
       color: var(--primary-text-color, #273536);
       font-family: var(--ha-font-family, system-ui, sans-serif);
     }
@@ -316,6 +318,9 @@ let DeyeBatteryScheduleCardEditor = class DeyeBatteryScheduleCardEditor extends 
       color: inherit;
       font: inherit;
       min-height: 44px;
+    }
+    input {
+      caret-color: auto;
     }
     input:focus-visible,
     select:focus-visible {
@@ -629,6 +634,8 @@ let DeyeBatteryScheduleCard = class DeyeBatteryScheduleCard extends i {
       display: block;
       min-width: 0;
       height: 100%;
+      /* Hide browsing carets outside editable controls. */
+      caret-color: transparent;
     }
     * {
       box-sizing: border-box;
@@ -835,6 +842,7 @@ let DeyeBatteryScheduleCard = class DeyeBatteryScheduleCard extends i {
     }
     input {
       min-width: 0;
+      caret-color: auto;
       border: 1px solid var(--divider-color, #d9e3df);
       background: var(--secondary-background-color, #f3f6f5);
       border-radius: 8px;

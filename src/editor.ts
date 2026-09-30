@@ -77,6 +77,8 @@ export class DeyeBatteryScheduleCardEditor extends LitElement {
   static styles = css`
     :host {
       display: block;
+      /* Hide browsing carets outside editable controls. */
+      caret-color: transparent;
       color: var(--primary-text-color, #273536);
       font-family: var(--ha-font-family, system-ui, sans-serif);
     }
@@ -104,6 +106,9 @@ export class DeyeBatteryScheduleCardEditor extends LitElement {
       color: inherit;
       font: inherit;
       min-height: 44px;
+    }
+    input {
+      caret-color: auto;
     }
     input:focus-visible,
     select:focus-visible {

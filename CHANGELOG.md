@@ -1,5 +1,10 @@
 ﻿# Changelog
 
+## 0.1.2
+
+- Hide stray browsing carets on non-editable card, dialog and configuration editor content.
+- Preserve visible input carets and keyboard focus indicators.
+
 ## 0.1.0
 
 - Introduce an independent Deye Time of Use battery schedule card with six compact rows.
