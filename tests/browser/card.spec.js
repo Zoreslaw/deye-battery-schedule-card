@@ -171,6 +171,7 @@ test('inline time picker increments immediately, wraps midnight and saves the la
 
 test('inline time picker preserves seconds, keyboard focus and cleanup on reopen', async ({ page }) => {
   await page.goto(normal);
+  await expect(card(page).locator('.interval').first()).toBeVisible();
   await page.evaluate(() => {
     const c = window.previewCards[0];
     c.hass = {
