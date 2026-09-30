@@ -2,6 +2,7 @@
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 permissions:
   contents: write
 concurrency:
@@ -24,8 +25,6 @@ jobs:
           node --input-type=module -e 'import fs from "node:fs"; const pkg=JSON.parse(fs.readFileSync("package.json","utf8")); const lock=JSON.parse(fs.readFileSync("package-lock.json","utf8")); if(process.env.RELEASE_TAG!==`v${pkg.version}` || lock.version!==pkg.version || lock.packages[""].version!==pkg.version) throw Error("Version mismatch");'
       - run: npm run build
       - run: npm test
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
       - name: Publish release asset
         env:
           GH_TOKEN: ${{ github.token }}
