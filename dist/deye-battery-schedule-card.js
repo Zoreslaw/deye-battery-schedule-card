@@ -855,6 +855,11 @@ let DeyeBatteryScheduleCard = class DeyeBatteryScheduleCard extends i {
       text-align: center;
       color-scheme: var(--deye-color-scheme, normal);
     }
+    .time-input::-webkit-calendar-picker-indicator {
+      caret-color: transparent;
+      cursor: pointer;
+      user-select: none;
+    }
     .stepper {
       display: grid;
       grid-template-columns: 44px minmax(0, 1fr) 44px;

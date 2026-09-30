@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 0.1.3
+
+- Hide the text caret on the native time picker clock button and use a pointer cursor without disabling the picker.
+
 ## 0.1.2
 
 - Hide stray browsing carets on non-editable card, dialog and configuration editor content.

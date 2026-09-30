@@ -1,7 +1,7 @@
 {
   "name": "deye-battery-schedule-card",
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Compact Home Assistant dashboard card for editing Deye inverter Time of Use battery schedule.",
   "repository": {
     "type": "git",
