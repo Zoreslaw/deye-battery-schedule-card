@@ -851,9 +851,19 @@ let DeyeBatteryScheduleCard = class DeyeBatteryScheduleCard extends i {
     }
     .time-input {
       width: 100%;
+      caret-color: transparent;
       font-size: 22px;
       text-align: center;
       color-scheme: var(--deye-color-scheme, normal);
+    }
+    .time-input::-webkit-datetime-edit {
+      caret-color: transparent;
+    }
+    .time-input::-webkit-datetime-edit-hour-field,
+    .time-input::-webkit-datetime-edit-minute-field,
+    .time-input::-webkit-datetime-edit-second-field,
+    .time-input::-webkit-datetime-edit-ampm-field {
+      caret-color: auto;
     }
     .time-input::-webkit-calendar-picker-indicator {
       caret-color: transparent;
@@ -888,6 +898,7 @@ let DeyeBatteryScheduleCard = class DeyeBatteryScheduleCard extends i {
     }
     input::-webkit-inner-spin-button {
       -webkit-appearance: none;
+      caret-color: transparent;
     }
     .limits {
       margin: 10px 0 0;

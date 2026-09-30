@@ -3,6 +3,7 @@
 ## 0.1.3
 
 - Hide the text caret on the native time picker clock button and use a pointer cursor without disabling the picker.
+- Hide carets on time separators, time editing wrappers and native number spinner decorations while preserving editable time segments.
 
 ## 0.1.2
 
