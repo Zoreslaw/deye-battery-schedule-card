@@ -14,7 +14,7 @@ Select **Розклад батареї Deye** from the dashboard card picker. Co
 
 ### HACS
 
-The repository is prepared for HACS distribution; it must be published with a release asset before remote installation is possible.
+The [latest release](https://github.com/Zoreslaw/deye-battery-schedule-card/releases/latest) includes the ready-to-install `deye-battery-schedule-card.js` bundle.
 
 1. In HACS → **Custom repositories**, add `https://github.com/Zoreslaw/deye-battery-schedule-card` with category **Dashboard**.
 2. Download **Deye Battery Schedule Card** and reload the browser.
