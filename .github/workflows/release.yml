@@ -3,16 +3,23 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Tag to publish, for example v0.1.1
+        required: true
+        type: string
 permissions:
   contents: write
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-${{ inputs.release_tag || github.ref_name }}
   cancel-in-progress: false
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -20,7 +27,7 @@ jobs:
       - run: npm ci
       - name: Validate release version
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           node --input-type=module -e 'import fs from "node:fs"; const pkg=JSON.parse(fs.readFileSync("package.json","utf8")); const lock=JSON.parse(fs.readFileSync("package-lock.json","utf8")); if(process.env.RELEASE_TAG!==`v${pkg.version}` || lock.version!==pkg.version || lock.packages[""].version!==pkg.version) throw Error("Version mismatch");'
       - run: npm run build
@@ -28,5 +35,5 @@ jobs:
       - name: Publish release asset
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: gh release create "$RELEASE_TAG" dist/deye-battery-schedule-card.js --verify-tag --title "Deye Battery Schedule Card $RELEASE_TAG" --notes-file CHANGELOG.md

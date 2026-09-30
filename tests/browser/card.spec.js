@@ -117,6 +117,7 @@ test('status transitions do not shift rows, unavailable row isolated, reduced mo
 });
 test('visual editor selects six pairs without losing card type', async ({ page }) => {
   await page.goto(normal);
+  await expect(card(page)).toHaveCount(1);
   await page.evaluate(() => {
     const c = window.previewCards[0];
     const ed = c.constructor.getConfigElement();
