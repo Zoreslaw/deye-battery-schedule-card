@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 0.1.4
+
+- Replace the native scrolling time popup with an inline Flatpickr editor, themed for Home Assistant.
+- Add touch-sized hour/minute controls, direct keyboard entry, preserved seconds and immediate draft updates.
+- Keep Tab focus inside the dialog, Escape cancellation, Enter saving and cleanup on close.
+
 ## 0.1.3
 
 - Hide the text caret on the native time picker clock button and use a pointer cursor without disabling the picker.

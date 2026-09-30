@@ -34,7 +34,8 @@ test('time editing updates both neighbors; dialog keeps focus inside', async ({ 
   await page.goto(normal);
   const c = card(page);
   await c.locator('.interval').nth(1).click();
-  await c.locator('#value').fill('06:30');
+  await c.getByRole('spinbutton', { name: 'Години', exact: true }).fill('06');
+  await c.getByRole('spinbutton', { name: 'Хвилини', exact: true }).fill('30');
   await c.getByRole('button', { name: 'Зберегти' }).click();
   await expect(c.locator('.interval').first()).toContainText('05:00');
   await expect(c.locator('.interval').first()).toContainText('06:30');
@@ -144,4 +145,80 @@ test('invalid values show Ukrainian feedback without sending an action', async (
   await expect(c.locator('.dialog-error')).toContainText('Вкажіть заряд');
   expect(await page.evaluate(() => window.previewCalls.length)).toBe(0);
   await page.keyboard.press('Escape');
+});
+
+test('inline time picker increments immediately, wraps midnight and saves the latest click', async ({ page }) => {
+  await page.goto(normal);
+  const c = card(page);
+  await c.locator('.interval').first().click();
+  const hours = c.getByRole('spinbutton', { name: 'Години', exact: true });
+  const minutes = c.getByRole('spinbutton', { name: 'Хвилини', exact: true });
+  await expect(hours).toBeFocused();
+  await hours.fill('23');
+  await minutes.fill('59');
+  await c.getByRole('button', { name: 'Збільшити: хвилини', exact: true }).click();
+  await expect(hours).toHaveValue('00');
+  await expect(minutes).toHaveValue('00');
+  await c.getByRole('button', { name: 'Збільшити: хвилини', exact: true }).press('Space');
+  await expect(minutes).toHaveValue('01');
+  await c.getByRole('button', { name: 'Зберегти' }).click();
+  expect(await page.evaluate(() => window.previewCalls[0])).toEqual({
+    domain: 'time',
+    service: 'set_value',
+    data: { entity_id: 'time.demo_program_1', time: '00:01:00' },
+  });
+});
+
+test('inline time picker preserves seconds, keyboard focus and cleanup on reopen', async ({ page }) => {
+  await page.goto(normal);
+  await page.evaluate(() => {
+    const c = window.previewCards[0];
+    c.hass = {
+      ...c.hass,
+      states: {
+        ...c.hass.states,
+        'time.demo_program_1': { ...c.hass.states['time.demo_program_1'], state: '01:00:15' },
+      },
+    };
+  });
+  const c = card(page);
+  await c.locator('.interval').first().click();
+  await expect(c.getByRole('spinbutton', { name: 'Секунди', exact: true })).toHaveValue('15');
+  for (let i = 0; i < 18; i++) {
+    await page.keyboard.press('Tab');
+    expect(await c.locator('dialog').evaluate((el) => el.contains(el.getRootNode().activeElement))).toBe(true);
+  }
+  await c.locator('.flatpickr-minute').focus();
+  await page.keyboard.press('Escape');
+  await expect(c.locator('dialog')).not.toBeVisible();
+  await expect(c.locator('.flatpickr-calendar')).toHaveCount(0);
+  expect(await page.evaluate(() => window.previewCalls)).toEqual([]);
+  await c.locator('.interval').first().click();
+  await expect(c.locator('.flatpickr-calendar')).toHaveCount(1);
+  await c.locator('.flatpickr-minute').fill('30');
+  await c.locator('.flatpickr-minute').press('Enter');
+  await expect(c.locator('dialog')).not.toBeVisible();
+  expect(await page.evaluate(() => window.previewCalls[0].data.time)).toBe('01:30:15');
+});
+
+test('inline time picker fits narrow touch screens in both themes without native popup', async ({ browser }) => {
+  const context = await browser.newContext({ hasTouch: true, isMobile: true, viewport: { width: 320, height: 650 } });
+  const page = await context.newPage();
+  for (const theme of ['light', 'dark']) {
+    await page.goto(`http://localhost:5001/examples/preview.html?scenario=normal&theme=${theme}`);
+    const c = card(page);
+    await c.locator('.interval').first().tap();
+    await expect(c.locator('input[type=time]')).toHaveCount(0);
+    const dialog = c.locator('dialog');
+    const before = await dialog.boundingBox();
+    expect(await dialog.evaluate((el) => el.scrollHeight <= el.clientHeight && el.scrollWidth <= el.clientWidth)).toBe(
+      true,
+    );
+    await c.getByRole('button', { name: 'Збільшити: хвилини', exact: true }).tap();
+    await expect(c.locator('.flatpickr-minute')).toHaveValue('01');
+    expect(await dialog.boundingBox()).toEqual(before);
+    await page.screenshot({ path: `test-results/time-picker-${theme}.png` });
+    await c.getByRole('button', { name: 'Скасувати' }).tap();
+  }
+  await context.close();
 });

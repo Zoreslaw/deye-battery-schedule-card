@@ -1,5 +1,7 @@
 import { LitElement, html, css, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, eventOptions, property, state } from 'lit/decorators.js';
+import type { Instance } from 'flatpickr/dist/types/instance';
+import { createTimePicker, timePickerStyles } from './time-picker';
 import { Commands } from './commands';
 import { displayTime, normalizeTime, numberValue, programViews, stepSoc, validSoc, validateConfig } from './model';
 import type { Field, HomeAssistant, ScheduleConfig } from './types';
@@ -19,6 +21,7 @@ export class DeyeBatteryScheduleCard extends LitElement {
   @state() private config?: ScheduleConfig;
   @state() private draft?: Draft;
   private returnFocus?: HTMLElement;
+  private timePicker?: Instance;
   private readonly commands = new Commands(() => this.requestUpdate());
 
   public setConfig(config: ScheduleConfig): void {
@@ -68,10 +71,23 @@ export class DeyeBatteryScheduleCard extends LitElement {
     await this.updateComplete;
     const dialog = this.renderRoot?.querySelector('dialog');
     if (!this.draft || !this.isConnected || !dialog) return;
+    const input = this.renderRoot.querySelector<HTMLInputElement>('#value')!;
+    if (field === 'time') {
+      this.timePicker = createTimePicker(
+        input,
+        this.renderRoot.querySelector<HTMLElement>('.time-picker')!,
+        String(original),
+        (value) => {
+          if (this.draft?.field === 'time') this.draft = { ...this.draft, value, error: '' };
+        },
+      );
+    }
     if (!dialog.open) dialog.showModal();
-    this.renderRoot.querySelector<HTMLInputElement>('#value')?.focus();
+    (this.timePicker?.hourElement ?? input).focus();
   }
   private closeEditor(restore = true): void {
+    this.timePicker?.destroy();
+    this.timePicker = undefined;
     this.draft = undefined;
     const dialog = this.renderRoot?.querySelector('dialog');
     if (dialog?.open) dialog.close();
@@ -125,11 +141,24 @@ export class DeyeBatteryScheduleCard extends LitElement {
     )
       this.closeEditor();
   }
+  @eventOptions({ capture: true })
   private dialogKeyDown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (
+      target.closest('.time-picker') &&
+      (target instanceof HTMLButtonElement || ['Tab', 'Escape', 'Enter'].includes(event.key))
+    ) {
+      // Keep the outer dialog in charge of focus, cancellation and submission.
+      event.stopPropagation();
+      if (event.key === 'Enter' && target instanceof HTMLInputElement) {
+        target.blur();
+        this.save(event);
+      }
+    }
     if (event.key !== 'Tab') return;
     const dialog = event.currentTarget as HTMLDialogElement;
     const controls = [...dialog.querySelectorAll<HTMLInputElement | HTMLButtonElement>('button, input')].filter(
-      (control) => !control.disabled && control.tabIndex >= 0,
+      (control) => !control.disabled && !control.hidden && control.tabIndex >= 0,
     );
     const first = controls[0];
     const last = controls.at(-1);
@@ -199,15 +228,8 @@ export class DeyeBatteryScheduleCard extends LitElement {
                         </button>
                       </div>
                       <p class="limits">${limits?.min}–${limits?.max}% · крок ${limits?.step}%</p>`
-                  : html`<input
-                        id="value"
-                        class="time-input"
-                        type="time"
-                        required
-                        step=${draft.original.toString().endsWith(':00') ? '60' : '1'}
-                        .value=${draft.value}
-                        @input=${this.changeDraft}
-                      />
+                  : html`<input id="value" type="text" hidden .value=${draft.value} @input=${this.changeDraft} />
+                      <div class="time-picker" role="group" aria-label="Час початку"></div>
                       <p class="limits">Змінює також кінець попереднього інтервалу.</p>`
               }
               <p class="dialog-error" role="alert">${draft.error}</p>
@@ -281,6 +303,7 @@ export class DeyeBatteryScheduleCard extends LitElement {
       >${this.renderEditor()}`;
   }
   static styles = css`
+    ${timePickerStyles}
     :host {
       display: block;
       min-width: 0;
@@ -499,27 +522,6 @@ export class DeyeBatteryScheduleCard extends LitElement {
       border-radius: 8px;
       padding: 10px;
       min-height: 44px;
-    }
-    .time-input {
-      width: 100%;
-      caret-color: transparent;
-      font-size: 22px;
-      text-align: center;
-      color-scheme: var(--deye-color-scheme, normal);
-    }
-    .time-input::-webkit-datetime-edit {
-      caret-color: transparent;
-    }
-    .time-input::-webkit-datetime-edit-hour-field,
-    .time-input::-webkit-datetime-edit-minute-field,
-    .time-input::-webkit-datetime-edit-second-field,
-    .time-input::-webkit-datetime-edit-ampm-field {
-      caret-color: auto;
-    }
-    .time-input::-webkit-calendar-picker-indicator {
-      caret-color: transparent;
-      cursor: pointer;
-      user-select: none;
     }
     .stepper {
       display: grid;
